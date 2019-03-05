@@ -23,8 +23,18 @@ public class WordTrek {
 		
 	}
 	
-	public void solve() {
+	public void solveSingleThread() {
+		solve(false);
+	}
+
+	public void solveMultiThread() {
+		solve(true);
+	}
+
+	private void solve(boolean multiThread) {
+
 		long startTime = System.currentTimeMillis();
+
 		if (nodes == null || nodes.isEmpty()) 
 			return;
 
@@ -36,12 +46,33 @@ public class WordTrek {
 				if (wtn.words.size() == i)
 					worklist.add(wtn);
 			}
-		
-			for (WordtrekNode wtn : worklist)
-				findWord(wtn, i);
+
+			if (multiThread) {
+				ArrayList<Thread> threads = new ArrayList<Thread>();
+				for (WordtrekNode wtn : worklist) {
+						//System.out.print(":");
+						Thread t = new FindWord(wtn, i, nodes, dict);
+						threads.add(t);
+						t.start();
+				}
+
+				try {
+					for (Thread t : threads) {
+						t.join();
+					}
+				} catch (Exception e) {	
+					e.printStackTrace();
+				}
+			} else {
+				for (WordtrekNode wtn : worklist) {
+					//System.out.print(".");
+					findWord(wtn, i);
+				}
+			}
 		}
+
 		long finishTime = System.currentTimeMillis();
-		System.out.printf("Elapsed time: %d milliseconds\n", finishTime - startTime);
+		System.out.printf("\nElapsed time: %d milliseconds\n", finishTime - startTime);
 	}
 
 	public void print() {
@@ -56,10 +87,10 @@ public class WordTrek {
 		}	
 	}
 	
-	public void findWord(WordtrekNode wtn, int i) {
+	public void findWord(WordtrekNode wtn, int index) {
 		for (int r=0; r<wtn.table.getRows(); r++)
 			for (int c=0; c<wtn.table.getCols(); c++)
-				findWordAtRC(r,  c, wtn, "", wtn.wordLengths[i]);
+				findWordAtRC(r,  c, wtn, "", wtn.wordLengths[index]);
 	}
 
 	public void findWordAtRC(int r, int c, WordtrekNode wtn, String prefix, int len) {

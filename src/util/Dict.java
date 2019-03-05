@@ -21,7 +21,7 @@ public class Dict {
 				words.add(s.nextLine().toLowerCase());
 			}
 			s.close();
-			System.out.println(words.size());
+			System.out.printf("%d words loaded in the dictionary!\n", words.size());
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} finally {
