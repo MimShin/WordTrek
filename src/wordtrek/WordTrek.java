@@ -47,6 +47,8 @@ public class WordTrek {
 					worklist.add(wtn);
 			}
 
+			System.out.printf("level %d: %d nodes\n", i, worklist.size());
+
 			if (multiThread) {
 				ArrayList<Thread> threads = new ArrayList<Thread>();
 				for (WordtrekNode wtn : worklist) {
@@ -97,40 +99,39 @@ public class WordTrek {
 
 		//System.out.printf("\"%s\" %d,%d %d\n", prefix, r, c, len);
 		
-		if (len == 0) {
-			if (dict.contains(prefix)) {
-				ArrayList<String> newWords = new ArrayList<String>(wtn.words);
-				newWords.add(prefix);
-				WordtrekNode newWtn = new WordtrekNode(wtn.table.clone(), wtn.wordLengths, newWords);
-				nodes.putIfAbsent(newWtn.getKey(), newWtn);
-			}
-			return;
-		}
-		
 		Table table = wtn.table;
 		char ch = table.getChar(r, c);
 
-		if (ch != '.') {
-			table.setChar(r, c, '.');
-			if (len == 1) {
-				findWordAtRC(-1, -1, wtn, prefix + Character.toString(ch), 0);
-			} else {
-				for (int dr=-1; dr<=1; dr++) {
+		if (ch == '.')
+			return;
 
-					int rr = r+dr;
-					if (rr < 0 || rr > rows) continue; // out of bound
+		table.setChar(r, c, '.');
 
-					for (int dc=-1; dc<=1; dc++) {
-
-						int cc = c+dc;
-						if (cc < 0 || cc > cols || table.getChar(rr, cc) == '.') continue; //out of bound or empty
-
-						findWordAtRC(rr, cc, wtn, prefix + Character.toString(ch), len - 1);
-					}
-				}
+		if (len == 1) {
+			if (dict.contains(prefix + Character.toString(ch))) {
+				ArrayList<String> newWords = new ArrayList<String>(wtn.words);
+				newWords.add(prefix + Character.toString(ch));
+				WordtrekNode newWtn = new WordtrekNode(wtn.table.clone(), wtn.wordLengths, newWords);
+				nodes.putIfAbsent(newWtn.getKey(), newWtn);
 			}
 			table.setChar(r, c, ch);
-		}	
+			return;
+		}
+
+		for (int dr=-1; dr<=1; dr++) {
+
+			int rr = r+dr;
+			if (rr < 0 || rr > rows) continue; // out of bound
+
+			for (int dc=-1; dc<=1; dc++) {
+
+				int cc = c+dc;
+				if (cc < 0 || cc > cols || table.getChar(rr, cc) == '.') continue; //out of bound or empty
+
+				findWordAtRC(rr, cc, wtn, prefix + Character.toString(ch), len - 1);
+			}
+		}
+		table.setChar(r, c, ch);
 	}
 }
 
